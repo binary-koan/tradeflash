@@ -1,0 +1,13 @@
+{
+  "name": "tradeflow",
+  "version": "0.1.0",
+  "homepage": "https://github.com/binary-koan/tradeflow",
+  "authors": [
+    "Jono Mingard <reason.koan@gmail.com>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "mithril": "~0.2.0",
+    "bootstrap": "~3.3.5"
+  }
+}

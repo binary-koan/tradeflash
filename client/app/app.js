@@ -1,16 +1,51 @@
 (function() {
+  var socket = io();
+  
+  var ROUTES = {
+    index: '/',
+    images: '/flow'
+  };
+  
+  var StartPage = {
+    controller: function() { return {} },
+    
+    view: function(ctrl) {
+      return m("a", { href: ROUTES.images, config: m.route }, 'Default images');
+    }
+  };
 
   var Images = {
     list: m.prop([]),
     
+    setup: function() {
+      socket.on('update', function(msg) {
+        if (m.route() != ROUTES.images) return;
+        
+        console.log(msg);
+        Images.list().push(msg.url);
+        Images.list().shift();
+        m.redraw();
+      });
+      
+      socket.on('sending items', function(items) {
+        if (m.route() != ROUTES.images) return;
+        
+        console.log('sending items');
+        Images.list(items);
+        m.redraw();
+      });
+    },
+    
     controller: function() {
+      socket.emit('get items');
+      
       return {
-        list: Images.list()
+        list: Images.list
       };
     },
     
     view: function(ctrl) {
-      return m('.row', ctrl.list.map(function(src) {
+      return m('.row', ctrl.list().map(function(src) {
         return m('.col-md-4.col-xs-6', m('.thumb',
           m('a.thumbnail', { href: '#' },
             m('img.img-responsive', { src: src })
@@ -20,23 +55,13 @@
     }
   };
   
-  m.render(document.getElementById('images'), Images);
-
-  var socket = io();
-
-  socket.on('update', function(msg) {
-    console.log(msg);
-    Images.list().push(msg.url);
-    Images.list().shift();
-    m.render(document.getElementById('images'), Images);
-  });
-
-  socket.emit('get items');
-  socket.on('sending items', function(items) {
-    console.log('sending items');
-    Images.list(items);
-    m.render(document.getElementById('images'), Images);
-  });
+  Images.setup();
+  
+  var routeControllers = {};
+  routeControllers[ROUTES.index] = StartPage;
+  routeControllers[ROUTES.images] = Images;
+  
+  m.route(document.getElementById('main'), ROUTES.index, routeControllers);
 })();
 
 $(function() {
@@ -59,3 +84,4 @@ $(function() {
              $(".title").html("");
         });
 });
+

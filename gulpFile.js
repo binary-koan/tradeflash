@@ -30,7 +30,7 @@ var bundle = function() {
     .pipe($.sourcemaps.init({loadMaps: true})) // loads map from browserify file
        // Add transformation tasks to the pipeline here.
     .pipe($.sourcemaps.write('./')) // writes .map file
-    .pipe(gulp.dest('./public'));
+    .pipe(gulp.dest('./public/assets'));
 }
 
 gulp.task('js', bundle); // so you can run `gulp js` to build the file
@@ -40,7 +40,7 @@ b.on('log', gutil.log); // output build logs to terminal
 gulp.task('less', function() {
   return gulp.src('./assets/styles/main.less')
     .pipe($.less())
-    .pipe(gulp.dest('./public'));
+    .pipe(gulp.dest('./public/assets'));
 });
 
 gulp.watch('./assets/styles/**/*.less', ['less']);

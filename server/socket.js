@@ -1,19 +1,76 @@
+var data = require('./data');
+
+var categoryTickers = {};
+
+function setupSocket(socket) {
+  // Return the first 9 items in a category upon request
+  socket.on('get category', function(id) {
+    data.getListings(id, function(listings) {
+      socket.emit('sending listings', { category: id, listings: listings.slice(0, 9) });
+    });
+  });
+  
+  var categoryListeners = {};
+  
+  socket.on('listen to category', function(id) {
+    categoryTickers[id] = categoryTickers[id] || { listeners: [], index: 0 };
+    categoryListeners[id] = categoryTickers[id].listeners.push(socket);
+  });
+  
+  socket.on('disconnect', function() {
+    // Delete all our listeners
+    for (var id in categoryListeners) {
+      if (categoryListeners.hasOwnProperty(id)) {
+        categoryTickers[id].listeners.splice(categoryListeners[id], 1);
+      }
+    }
+  });
+}
+
+function updateListeners(id, index, listeners) {
+  data.getListings(id, function(listings) {
+    listeners.forEach(function(socket) {
+      socket.emit('next listing', { category: id, listing: listings[index] });
+    });
+  });
+}
+
+setInterval(function() {
+  for (var id in categoryTickers) {
+    if (categoryTickers.hasOwnProperty(id)) {
+      var listeners = categoryTickers[id].listeners;
+      categoryTickers[id].index = (categoryTickers[id].index + 1) % data.STORED_LISTINGS;
+      updateListeners(id, categoryTickers[id].index, listeners);
+    }
+  }
+}, 5000);
+
 module.exports = function(http) {
-  var categories = require('./categories');
+  // var categories = require('./categories');
   var io = require('socket.io')(http);
   var fs = require('fs');
+  
+  io.on('connection', function(socket) {
+    console.log('Client connected!');
+    setupSocket(socket);
+    
+    socket.on('get items', function() {
+      socket.emit('sending items', items.slice(0, 9));
+    });
+  });
 
-  function categoryUpdater(categories) {
-    return function() {
-      for (var category in categories) {
-        io.emit('update ' + category, categories[category].next());
-      }
-    };
-  }
+  // function categoryUpdater(categories) {
+  //   return function() {
+  //     for (var category in categories) {
+  //       io.emit('update ' + category, categories[category].next());
+  //     }
+  //   };
+  // }
   
   var items = [];
   
-  categories.apiRequest('/v1/Search/General.json?category=3720', function(data) {
+  var trademe = require('./trademe');
+  trademe.apiRequest('/v1/Search/General.json?category=3720', function(data) {
     data = JSON.parse(data);
     
     for (var i = 0; i < data['List'].length; i++) {
@@ -23,14 +80,6 @@ module.exports = function(http) {
     
     console.log('got items!');
     console.log(items.length);
-  });
-
-  io.on('connection', function(socket) {
-    console.log('Client connected!');
-    
-    socket.on('get items', function() {
-      socket.emit('sending items', items.slice(0, 9));
-    });
   });
 
   // categories.load(function(categories) {
@@ -47,8 +96,9 @@ module.exports = function(http) {
   }, 10000);
   
   // gets all categories, puts it in a file
+  // Do we need to put it in a file? see data.js:31 - Jono
   (function loadCategories(){
-    categories.apiRequest('/v1/Categories.json', function (categories){
+    trademe.apiRequest('/v1/Categories.json', function (categories){
       fs.writeFile("server/res/categories.json", categories, function(err) {
         if(err){
           return console.log("failed to write categories to file", err);

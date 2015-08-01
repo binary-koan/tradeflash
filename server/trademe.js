@@ -1,27 +1,15 @@
 var https = require('https');
 
-var trademeKey = 'AC9BED97D20BECADA9291807EC6B2A3B';
-var trademeSecret = 'EA94F06BA11CF67F41D629218A387084';
-
-function Category(name) {
-  this.name = name;
-  this.values = [];
-  this.apiRequest();
-}
-
-Category.prototype.next = function() {
-  return this.values.shift();
-};
+var APP_KEY = 'AC9BED97D20BECADA9291807EC6B2A3B';
+var APP_SECRET = 'EA94F06BA11CF67F41D629218A387084';
 
 function apiRequest(url, cb) {
-  // Do API request and add results to this.values[]
-  
   // Set the options for our API call
   var options = {
 	  hostname: 'api.trademe.co.nz',
 	  path: url,
 	  method: 'GET',
-	  headers: {'Authorization': 'Oauth oauth_consumer_key="'+trademeKey+'", oauth_signature_method="PLAINTEXT", oauth_signature="'+trademeSecret+'&"'}
+	  headers: {'Authorization': 'Oauth oauth_consumer_key="' + APP_KEY + '", oauth_signature_method="PLAINTEXT", oauth_signature="' + APP_SECRET + '&"'}
 	};
   
   // Define our callback to work with the response
@@ -64,24 +52,8 @@ function apiRequest(url, cb) {
   // Execute
 	var req = https.request(options, callback);
 	req.end();
-};
+}
 
 module.exports = {
-  load: function(callback) {
-    // Do API call, add Category instances to categories
-    
-    // var topLevelCategories = apiRequest('/v1/Categories.json');
-    
-    /*
-    for category in data.topLevelCategories:
-      categories.push(new Category(category.name));
-    */
-    // for (var item in topLevelCategories) {
-    //   categories.push(new Category(item.name));
-    // }
-    
-    // return categories;
-  },
-  
   apiRequest: apiRequest
 };

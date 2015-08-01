@@ -49,3 +49,36 @@
   max-height: 100%;
   vertical-align: middle;
 }
+
+/* Individual listings */
+
+.thumb a.listing .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.thumb a.listing:hover .overlay {
+  opacity: 1;
+}
+
+.thumb a.listing .pricetag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: white;
+}
+
+.thumb a.listing .title {
+  position: absolute;
+  bottom: 10%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: white;
+}

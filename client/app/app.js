@@ -47,9 +47,15 @@
     view: function(ctrl) {
       return m('.row', ctrl.list().map(function(src) {
         return m('.col-md-4.col-xs-6', m('.thumb',
-          m('a.thumbnail', { href: '#' },
-            m('img.img-responsive', { src: src })
-          )
+          m('a.thumbnail.listing', { href: '#' }, [
+            m('img.img-responsive', { src: src }),
+            m('.overlay'),
+            m('.pricetag', [
+              m('span.sr-only', 'Current bid: '),
+              m('span', '$10.00')
+            ]),
+            m('h5.title', 'Item title')
+          ])
         ));
       }));
     }

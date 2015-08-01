@@ -4,7 +4,7 @@ module.exports = function() {
   
   var app = express();
   // app.use(reloader());
-  app.use(express.static('./client'));
+  app.use(express.static('./public'));
   
   return app;
 };

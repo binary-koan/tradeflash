@@ -1,4 +1,5 @@
 var ROUTES = {
+  startpage: '/startpage',
   categories: '/',
   images: '/flow'
 };

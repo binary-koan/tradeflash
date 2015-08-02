@@ -7,10 +7,12 @@ require('../vendor/bootstrap/dist/js/bootstrap');
 var m = require('../vendor/mithril/mithril');
 var socket = require('./util/socket');
 var ROUTES = require('./util/routes');
+var StartPage = require('./components/startpage')(socket);
 var Categories = require('./components/categories')(socket);
 var Images = require('./components/images')(socket);
 
 var paths = {};
+paths[ROUTES.startpage] = StartPage;
 paths[ROUTES.categories] = Categories;
 paths[ROUTES.images] = Images;
 

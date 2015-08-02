@@ -1,8 +1,7 @@
 var data = require('./data');
 var trademe = require('./trademe');
 
-var categoryTickers = {},
-  itemLikes = {};
+var categoryTickers = {};
 
 function setupSocket(socket) {
   data.getCategories(function(categories){
@@ -12,6 +11,7 @@ function setupSocket(socket) {
   });
   // Return the first 9 items in a category upon request
   socket.on('get category', function(id) {
+    //id.split(',');
     data.getListings(id, function(listings) {
       console.log('RECEIVED: ' + id);
       socket.emit('sending listings', { category: id, listings: listings.slice(0, 9) });
@@ -36,9 +36,14 @@ function setupSocket(socket) {
   
   socket.on('add to watchlist', function(itemId){
     // increment likes count by one
-    if (itemLikes[itemId])  itemLikes[i]++;
-    else itemLikes[itemId] = 1;
-    trademe.apiRequest('');
+    if (data.itemLikes[itemId]) data.itemLikes[itemId]++;
+    else data.itemLikes[itemId] = 1;
+    trademe.apiRequest('/v1/MyTradeMe/WatchList/' + itemId + '.json', function(strRes) {
+      var response = JSON.parse(strRes);
+      if (response.Success)
+        console.log("added something to watchlist!");
+      else console.log("failed adding something to watchlist");
+    }, "user");
   });
 }
 

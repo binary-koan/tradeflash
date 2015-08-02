@@ -4,26 +4,30 @@ var socket;
 
 var Images = {
   list: m.prop([]),
-  
+  categories: [],
+  desiredCategory: 0,
+
   controller: function() {
     var categories = m.route.param('categories');
-    socket.emit('get category', categories);
-    //for (var i = 0; i < categories.length; i++) {
+    if (typeof(categories) == 'string') {
+      categories = categories.split(',');
+    }
+    Images.categories = categories;
+    Images.desiredCategory = 0;
+
+    for (var i = 0; i < categories.length; i++) {
       // emit 'get category' or something with category
-    //  socket.emit('get category', categories[i]);
-    //}
-    
-    socket.on('sending listings', function(listings) {
-      this.list = listings.listings;
-    });
-    
-    socket.emit('get items');
-    
+      socket.emit('get category', categories[i]);
+      socket.emit('listen to category', categories[i]);
+      //console.log('IMAGES.JS categories: ' + categories[i]);
+      //console.log('IMAGES.JS categories: ' + getValue(categories[i]));
+    }
+
     return {
       list: Images.list
     };
   },
-  
+
   view: function(ctrl) {
     return m('.row', ctrl.list().map(function(item) {
       return m('.col-md-4.col-xs-6', m('.thumb',
@@ -34,8 +38,8 @@ var Images = {
         }, [
           m('img.img-responsive', { src: item.url }),
           m('.overlay'),
-          m('button.btn-warning.watchlist-btn', 'add watchlist', { onclick: addToWatchList }),
-          m('p', '+' + item.likes),
+          m('button.btn.btn-default.watchlist-btn', 'Add to Watchlist', { onclick: addToWatchList }),
+          m('p.likes-counter', '+' + (item.likes || Math.round(Math.random()*10))),
           m('.pricetag', [
             m('span.sr-only', 'Current bid: '),
             m('span', item.price)
@@ -47,51 +51,10 @@ var Images = {
   }
 };
 
-var itemIndices = [], // for selecting next item swap
-  nextItem = 0; // index of next item to to swap 
-
-module.exports = function(s) {
-  socket = s;
-  
-  socket.on('update', function(item) {
-    if (m.route() != ROUTES.images) return;
-    
-    // item = { imageURL: item };
-    
-    console.log(item);
-    
-    // fade in/out animations
-    $('div a.thumbnail.listing').eq(0)
-      .fadeTo(500, 0.001, "easeOutCubic", function() {
-        Images.list()[nextItem] = item;
-        nextItem = (nextItem + 1) % 10;
-        item.config = fadeIn(item);
-        m.redraw();
-      });
-  });
-  
-  socket.on('sending items', function(items) {
-    if (m.route() != ROUTES.images) return;
-    
-    console.log('sending items');
-    for (var i = 0; i < items.length; i++) {
-      items[i] = { url: items[i] };
-    }
-    
-    // next
-    items.forEach(function (d, i){
-      itemIndices.push(i);
-    });
-    shuffleArray(itemIndices);
-    
-    Images.list(items);
-    m.redraw();
-  });
-  
-  return Images;
-};
-
 // utility methods
+
+var itemIndices = [], // for selecting next item swap
+  nextItemIndex = 0; // index of next item to to swap
 
 function fadeIn(item){
   return function(elem){
@@ -103,9 +66,16 @@ function fadeIn(item){
   }
 }
 
+function getValue(key) {
+  //console.log('GET VALUE: ' + key);
+  for (var item in JSON.parse(localStorage.categoryList)) {
+    //console.log(item);
+  }
+}
+
 function addToWatchList(item){
   return function(elem) {
-    $(item).addClass("active watchlist-added") 
+    $(item).addClass("active watchlist-added")
     // increments 'like' counter
     // TODO: tell server
     item.likes++;
@@ -127,3 +97,59 @@ function shuffleArray(array) {
 $.easing.easeOutCubic = function (x, t, b, c, d) {
   return c*((t=t/d-1)*t*t + 1) + b;
 }
+
+// Exports
+
+module.exports = function(s) {
+  socket = s;
+  
+  socket.on('sending listings', function(listings) {
+    if (m.route().indexOf(ROUTES.images) != 0) return;
+    
+    if (Images.list().length === 0) {
+      Images.list(listings.listings);
+      
+      listings.listings.forEach(function (d, i){
+        itemIndices.push(i);
+      });
+      shuffleArray(itemIndices);
+    }
+    else {
+      var list = Images.list();
+      for (var i = 0; i < 3; i++) {
+        var random = Math.floor(Math.random() * 9);
+        list[random] = listings.listings[random];
+      }
+    }
+    m.redraw();
+  });
+
+  socket.on('next listing', function(data) {
+    if (m.route().indexOf(ROUTES.images) != 0) return;
+    if (data.category !== Images.categories[Images.desiredCategory]) return;
+    
+    setTimeout(function() {
+      Images.desiredCategory = (Images.desiredCategory + 1) % Images.categories.length;
+    }, 1000);
+    
+    var item = data.listing;
+    if (!item) {
+      return;
+    }
+
+    // fade in/out animations
+    console.log("next item", nextItemIndex);
+    console.log(itemIndices);
+    var currentItemIndex = itemIndices[nextItemIndex];
+    nextItemIndex = (nextItemIndex + 1) % 9;
+    
+    $('#main a.thumbnail.listing').eq(currentItemIndex)
+      .fadeTo(500, 0.001, "easeOutCubic", function() {
+        Images.list()[currentItemIndex] = item;
+        item.config = fadeIn(item);
+        m.redraw();
+      });
+  });
+
+  return Images;
+};

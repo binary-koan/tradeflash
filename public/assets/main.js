@@ -3,59 +3,32 @@ var m = require('../../vendor/mithril/mithril');
 var ROUTES = require('../util/routes');
 var socket;
 
+localStorage.categoryList = localStorage.categoryList || [];
+
 var Categories = {
-  
-  list: m.prop([]),
-  
-  controller: function() {
-    socket.emit('get items');
+  view: function() {
+    var categoryList = JSON.parse(localStorage.categoryList);
     
-    return {
-      list: Categories.list
-    };
-  },
-  
-  
-   //<label id="catagoryButton1" class="btn btn-primary catagoryButton">
-        //  <input id = "catagoryCheckbox1" type="checkbox" autocomplete="off"><img src="https://trademe.tmcdn.co.nz/photoserver/full/374118004.jpg" width="100" height="100">
-        //  Hottest
-      //  </label>
-  
-  view: function(ctrl) {
     return m('div', [
-      m('.row.checkboxes', ctrl.list().map(function(object) {
-        return m('.col-md-4.col-xs-6', m('label.btn.btn-default.catagoryButton.btn-block', {
-          onclick:function(event){
-            $(event.target).toggleClass("active")
-          }
-        }, [
-          m('input.sr-only[type=checkbox]', { id: object.id }), m('label', { for: object.id }, object.name)
-        ]));
-      })),
+    m('.row.checkboxes', categoryList.map(function(object) {
+       return m('.col-md-4.col-xs-6', m('label.btn.btn-default.catagoryButton.btn-block', {
+         for: object.id,
+         onclick:function(event){
+           $(event.target).toggleClass("active")
+         }
+       }, [
+         m('input.sr-only[type=checkbox]', { id: object.id }), object.name
+       ]));
+     })),
       
-      m('button.btn.btn-primary.catagoryButton.btn-block', {
+      m('button.btn.btn-success.catagoryButton.btn-block', {
         onclick:function(event) {
           console.log('getting categories');
           getChosenCategories();
         }
-      }, m('label',"Submit"))
+      }, m('label',"View Listings"))
     ]);
   }
-};
-
-module.exports = function(s) {
-  socket = s;
-  
-  socket.on('sending categories', function(items) {
-    if (m.route() != ROUTES.categories) return;
-    
-    console.log('sending items');
-   
-    Categories.list(items);
-    m.redraw();
-  });
-  
-  return Categories;
 };
 
 function getChosenCategories(){
@@ -70,37 +43,53 @@ function getChosenCategories(){
   console.log('chosen categories: ' + chosenCategories);
   
   //send list somewhere
-  m.route(ROUTES.images, { categories: chosenCategories});
+  m.route(ROUTES.images, { categories: chosenCategories });
 }
 
+module.exports = function(s) {
+  socket = s;
+  
+  socket.on('sending categories', function(items) {
+    if (m.route() != ROUTES.categories) return;
+   
+    localStorage.categoryList = JSON.stringify(items);
+    m.redraw();
+  });
+  
+  return Categories;
+};
 
-},{"../../vendor/mithril/mithril":8,"../util/routes":4}],2:[function(require,module,exports){
+},{"../../vendor/mithril/mithril":9,"../util/routes":5}],2:[function(require,module,exports){
 var m = require('../../vendor/mithril/mithril');
 var ROUTES = require('../util/routes');
 var socket;
 
 var Images = {
   list: m.prop([]),
-  
+  categories: [],
+  desiredCategory: 0,
+
   controller: function() {
     var categories = m.route.param('categories');
-    socket.emit('get category', categories);
-    //for (var i = 0; i < categories.length; i++) {
+    if (typeof(categories) == 'string') {
+      categories = categories.split(',');
+    }
+    Images.categories = categories;
+    Images.desiredCategory = 0;
+
+    for (var i = 0; i < categories.length; i++) {
       // emit 'get category' or something with category
-    //  socket.emit('get category', categories[i]);
-    //}
-    
-    socket.on('sending listings', function(listings) {
-      this.list = listings.listings;
-    });
-    
-    socket.emit('get items');
-    
+      socket.emit('get category', categories[i]);
+      socket.emit('listen to category', categories[i]);
+      //console.log('IMAGES.JS categories: ' + categories[i]);
+      //console.log('IMAGES.JS categories: ' + getValue(categories[i]));
+    }
+
     return {
       list: Images.list
     };
   },
-  
+
   view: function(ctrl) {
     return m('.row', ctrl.list().map(function(item) {
       return m('.col-md-4.col-xs-6', m('.thumb',
@@ -111,8 +100,8 @@ var Images = {
         }, [
           m('img.img-responsive', { src: item.url }),
           m('.overlay'),
-          m('button.btn-warning.watchlist-btn', 'add watchlist', { onclick: addToWatchList }),
-          m('p', '+' + item.likes),
+          m('button.btn.btn-default.watchlist-btn', 'Add to Watchlist', { onclick: addToWatchList }),
+          m('p.likes-counter', '+' + (item.likes || Math.round(Math.random()*10))),
           m('.pricetag', [
             m('span.sr-only', 'Current bid: '),
             m('span', item.price)
@@ -124,51 +113,10 @@ var Images = {
   }
 };
 
-var itemIndices = [], // for selecting next item swap
-  nextItem = 0; // index of next item to to swap 
-
-module.exports = function(s) {
-  socket = s;
-  
-  socket.on('update', function(item) {
-    if (m.route() != ROUTES.images) return;
-    
-    // item = { imageURL: item };
-    
-    console.log(item);
-    
-    // fade in/out animations
-    $('div a.thumbnail.listing').eq(0)
-      .fadeTo(500, 0.001, "easeOutCubic", function() {
-        Images.list()[nextItem] = item;
-        nextItem = (nextItem + 1) % 10;
-        item.config = fadeIn(item);
-        m.redraw();
-      });
-  });
-  
-  socket.on('sending items', function(items) {
-    if (m.route() != ROUTES.images) return;
-    
-    console.log('sending items');
-    for (var i = 0; i < items.length; i++) {
-      items[i] = { url: items[i] };
-    }
-    
-    // next
-    items.forEach(function (d, i){
-      itemIndices.push(i);
-    });
-    shuffleArray(itemIndices);
-    
-    Images.list(items);
-    m.redraw();
-  });
-  
-  return Images;
-};
-
 // utility methods
+
+var itemIndices = [], // for selecting next item swap
+  nextItemIndex = 0; // index of next item to to swap
 
 function fadeIn(item){
   return function(elem){
@@ -180,9 +128,16 @@ function fadeIn(item){
   }
 }
 
+function getValue(key) {
+  //console.log('GET VALUE: ' + key);
+  for (var item in JSON.parse(localStorage.categoryList)) {
+    //console.log(item);
+  }
+}
+
 function addToWatchList(item){
   return function(elem) {
-    $(item).addClass("active watchlist-added") 
+    $(item).addClass("active watchlist-added")
     // increments 'like' counter
     // TODO: tell server
     item.likes++;
@@ -204,7 +159,99 @@ function shuffleArray(array) {
 $.easing.easeOutCubic = function (x, t, b, c, d) {
   return c*((t=t/d-1)*t*t + 1) + b;
 }
-},{"../../vendor/mithril/mithril":8,"../util/routes":4}],3:[function(require,module,exports){
+
+// Exports
+
+module.exports = function(s) {
+  socket = s;
+  
+  socket.on('sending listings', function(listings) {
+    if (m.route().indexOf(ROUTES.images) != 0) return;
+    
+    if (Images.list().length === 0) {
+      Images.list(listings.listings);
+      
+      listings.listings.forEach(function (d, i){
+        itemIndices.push(i);
+      });
+      shuffleArray(itemIndices);
+    }
+    else {
+      var list = Images.list();
+      for (var i = 0; i < 3; i++) {
+        var random = Math.floor(Math.random() * 9);
+        list[random] = listings.listings[random];
+      }
+    }
+    m.redraw();
+  });
+
+  socket.on('next listing', function(data) {
+    if (m.route().indexOf(ROUTES.images) != 0) return;
+    if (data.category !== Images.categories[Images.desiredCategory]) return;
+    
+    setTimeout(function() {
+      Images.desiredCategory = (Images.desiredCategory + 1) % Images.categories.length;
+    }, 1000);
+    
+    var item = data.listing;
+    if (!item) {
+      return;
+    }
+
+    // fade in/out animations
+    console.log("next item", nextItemIndex);
+    console.log(itemIndices);
+    var currentItemIndex = itemIndices[nextItemIndex];
+    nextItemIndex = (nextItemIndex + 1) % 9;
+    
+    $('#main a.thumbnail.listing').eq(currentItemIndex)
+      .fadeTo(500, 0.001, "easeOutCubic", function() {
+        Images.list()[currentItemIndex] = item;
+        item.config = fadeIn(item);
+        m.redraw();
+      });
+  });
+
+  return Images;
+};
+
+},{"../../vendor/mithril/mithril":9,"../util/routes":5}],3:[function(require,module,exports){
+var m = require('../../vendor/mithril/mithril');
+var ROUTES = require('../util/routes');
+var socket;
+var catagories = ["Charity", "Cool Auctions","Hottest", "Featured", "Surprise Me", "Newest", "Choose Catagories", "$1 Reserve", "Closing Soon"]
+
+var Categories = {
+  
+  
+  view: function(ctrl) {
+    return m('div', [
+      m('.row.checkboxes', catagories.map(function(object) {
+        return m('.col-md-4.col-xs-6', m('label.btn.btn-default.catagoryButton.btn-block', {
+          onclick:function(event){
+            $(event.target).toggleClass("active")
+          }
+        }, [
+          m('input.sr-only[type=checkbox]', { id: object.id }), m('label', object )
+        ]));
+      })),
+      
+      m('button.btn.btn-primary.catagoryButton.btn-block', {
+         onclick:function(event) {
+          console.log('getting categories');
+           m.route(ROUTES.categories);
+        }
+      }, m('label',"Submit"))
+    ]);
+  }
+};
+
+module.exports = function(s) {
+  return Categories;
+};
+
+},{"../../vendor/mithril/mithril":9,"../util/routes":5}],4:[function(require,module,exports){
 // Import jQuery and plugins into the global namespace
 var jQuery = require('../vendor/jquery/dist/jquery');
 window.$ = window.jQuery = jQuery;
@@ -214,27 +261,30 @@ require('../vendor/bootstrap/dist/js/bootstrap');
 var m = require('../vendor/mithril/mithril');
 var socket = require('./util/socket');
 var ROUTES = require('./util/routes');
+var StartPage = require('./components/startpage')(socket);
 var Categories = require('./components/categories')(socket);
 var Images = require('./components/images')(socket);
 
 var paths = {};
+paths[ROUTES.startpage] = StartPage;
 paths[ROUTES.categories] = Categories;
 paths[ROUTES.images] = Images;
 
 m.route(document.getElementById('main'), ROUTES.categories, paths);
 
-},{"../vendor/bootstrap/dist/js/bootstrap":6,"../vendor/jquery/dist/jquery":7,"../vendor/mithril/mithril":8,"./components/categories":1,"./components/images":2,"./util/routes":4,"./util/socket":5}],4:[function(require,module,exports){
+},{"../vendor/bootstrap/dist/js/bootstrap":7,"../vendor/jquery/dist/jquery":8,"../vendor/mithril/mithril":9,"./components/categories":1,"./components/images":2,"./components/startpage":3,"./util/routes":5,"./util/socket":6}],5:[function(require,module,exports){
 var ROUTES = {
+  startpage: '/startpage',
   categories: '/',
   images: '/flow'
 };
 module.exports = ROUTES;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 // Note: io() is defined globally in index.html
 module.exports = io();
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*!
  * Bootstrap v3.3.5 (http://getbootstrap.com)
  * Copyright 2011-2015 Twitter, Inc.
@@ -2599,7 +2649,7 @@ if (typeof jQuery === 'undefined') {
 
 }(jQuery);
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.4
  * http://jquery.com/
@@ -11811,7 +11861,7 @@ return jQuery;
 
 }));
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var m = (function app(window, undefined) {
 	var OBJECT = "[object Object]", ARRAY = "[object Array]", STRING = "[object String]", FUNCTION = "function";
 	var type = {}.toString;
@@ -12972,7 +13022,7 @@ var m = (function app(window, undefined) {
 if (typeof module != "undefined" && module !== null && module.exports) module.exports = m;
 else if (typeof define === "function" && define.amd) define(function() {return m});
 
-},{}]},{},[3])
+},{}]},{},[4])
 
 
 //# sourceMappingURL=main.js.map

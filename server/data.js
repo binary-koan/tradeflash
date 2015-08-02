@@ -1,4 +1,5 @@
 var trademe = require('./trademe');
+var itemLikes = {};
 
 // Cached data
 
@@ -12,6 +13,7 @@ function parseTopLevelCategories(data) {
   // data is the JSON response from the API (as an object)
   // should return an object like [{id: <id>, name: <name>}, {id: <id2>, name: <name2>}, ...]
   var cat = [];
+  //console.log(data);
   
   data.Subcategories.forEach(function (category) {
     cat.push({
@@ -34,13 +36,17 @@ function parseListings(data) {
   // data is the JSON response from API listings for category request
   // should return an object like [{title: <title>, price: <price>, hasBuyNow: <true|false>, image: <url>, ... (any other data we need) }]
   data.List.forEach(function (listing){
-    listings.push({
+    //console.log(listing);
+    if (listing.PictureHref) {
+      listings.push({
       title: listing.Title,
       price: listing.PriceDisplay,
       hasBuyNow: listing.HasBuyNow,
-      imageURL: listing.PictureHref.replace('/\/thumb\//', '/full/'),
-      id: listing.ListingId
+      url: listing.PictureHref.replace(/\/thumb\//, '/full/'),
+      id: listing.ListingId,
+      likes: itemLikes[listing.ListingId]
     });
+    }
   });
   console.log("parsed listing", listings);
   return listings;
@@ -97,8 +103,7 @@ module.exports = {
   },
 
   getListings: function(id, callback) {
-    console.log('id: ' + id);
-    console.log('listings: ' + listings);
+    //console.log('listings: ' + listings);
     if (listings[id]) {
       callback(listings[id]);
     }

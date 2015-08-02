@@ -3170,26 +3170,26 @@ fieldset[disabled] .btn-primary.active {
 }
 .btn-success {
   color: #ffffff;
-  background-color: #5cb85c;
-  border-color: #4cae4c;
+  background-color: #da7d27;
+  border-color: #c67122;
 }
 .btn-success:focus,
 .btn-success.focus {
   color: #ffffff;
-  background-color: #449d44;
-  border-color: #255625;
+  background-color: #b0641e;
+  border-color: #59330f;
 }
 .btn-success:hover {
   color: #ffffff;
-  background-color: #449d44;
-  border-color: #398439;
+  background-color: #b0641e;
+  border-color: #915319;
 }
 .btn-success:active,
 .btn-success.active,
 .open > .dropdown-toggle.btn-success {
   color: #ffffff;
-  background-color: #449d44;
-  border-color: #398439;
+  background-color: #b0641e;
+  border-color: #915319;
 }
 .btn-success:active:hover,
 .btn-success.active:hover,
@@ -3201,8 +3201,8 @@ fieldset[disabled] .btn-primary.active {
 .btn-success.active.focus,
 .open > .dropdown-toggle.btn-success.focus {
   color: #ffffff;
-  background-color: #398439;
-  border-color: #255625;
+  background-color: #915319;
+  border-color: #59330f;
 }
 .btn-success:active,
 .btn-success.active,
@@ -3227,11 +3227,11 @@ fieldset[disabled] .btn-success:active,
 .btn-success.disabled.active,
 .btn-success[disabled].active,
 fieldset[disabled] .btn-success.active {
-  background-color: #5cb85c;
-  border-color: #4cae4c;
+  background-color: #da7d27;
+  border-color: #c67122;
 }
 .btn-success .badge {
-  color: #5cb85c;
+  color: #da7d27;
   background-color: #ffffff;
 }
 .btn-info {
@@ -4190,7 +4190,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 }
 .navbar {
   position: relative;
-  min-height: 80px;
+  min-height: 55px;
   margin-bottom: 20px;
   border: 1px solid transparent;
 }
@@ -4296,10 +4296,10 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 }
 .navbar-brand {
   float: left;
-  padding: 30px 15px;
+  padding: 17.5px 15px;
   font-size: 18px;
   line-height: 20px;
-  height: 80px;
+  height: 55px;
 }
 .navbar-brand:hover,
 .navbar-brand:focus {
@@ -4319,8 +4319,8 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   float: right;
   margin-right: 15px;
   padding: 9px 10px;
-  margin-top: 23px;
-  margin-bottom: 23px;
+  margin-top: 10.5px;
+  margin-bottom: 10.5px;
   background-color: transparent;
   background-image: none;
   border: 1px solid transparent;
@@ -4344,7 +4344,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   }
 }
 .navbar-nav {
-  margin: 15px -15px;
+  margin: 8.75px -15px;
 }
 .navbar-nav > li > a {
   padding-top: 10px;
@@ -4382,8 +4382,8 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
     float: left;
   }
   .navbar-nav > li > a {
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding-top: 17.5px;
+    padding-bottom: 17.5px;
   }
 }
 .navbar-form {
@@ -4394,8 +4394,8 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   border-bottom: 1px solid transparent;
   -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.1);
-  margin-top: 23px;
-  margin-bottom: 23px;
+  margin-top: 10.5px;
+  margin-bottom: 10.5px;
 }
 @media (min-width: 768px) {
   .navbar-form .form-group {
@@ -4480,20 +4480,20 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   border-bottom-left-radius: 0;
 }
 .navbar-btn {
-  margin-top: 23px;
-  margin-bottom: 23px;
+  margin-top: 10.5px;
+  margin-bottom: 10.5px;
 }
 .navbar-btn.btn-sm {
-  margin-top: 25px;
-  margin-bottom: 25px;
+  margin-top: 12.5px;
+  margin-bottom: 12.5px;
 }
 .navbar-btn.btn-xs {
-  margin-top: 29px;
-  margin-bottom: 29px;
+  margin-top: 16.5px;
+  margin-bottom: 16.5px;
 }
 .navbar-text {
-  margin-top: 30px;
-  margin-bottom: 30px;
+  margin-top: 17.5px;
+  margin-bottom: 17.5px;
 }
 @media (min-width: 768px) {
   .navbar-text {
@@ -4904,11 +4904,11 @@ a.label:focus {
   background-color: #3a548e;
 }
 .label-success {
-  background-color: #5cb85c;
+  background-color: #da7d27;
 }
 .label-success[href]:hover,
 .label-success[href]:focus {
-  background-color: #449d44;
+  background-color: #b0641e;
 }
 .label-info {
   background-color: #5bc0de;
@@ -5173,7 +5173,7 @@ a.thumbnail.active {
   animation: progress-bar-stripes 2s linear infinite;
 }
 .progress-bar-success {
-  background-color: #5cb85c;
+  background-color: #da7d27;
 }
 .progress-striped .progress-bar-success {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
@@ -6760,7 +6760,7 @@ button.close {
   }
 }
 body {
-  padding-top: 100px;
+  padding-top: 95px;
   /* Required padding for .navbar-fixed-top. Change if height of navigation changes. */
 }
 .thumb a.listing .overlay {
@@ -6769,32 +6769,48 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: #496ab2;
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 }
 .thumb a.listing:hover .overlay {
-  opacity: 1;
+  opacity: 0.75;
 }
 .thumb a.listing .pricetag {
   position: absolute;
   top: 0;
   right: 0;
   background: white;
+  padding: 5px;
+  border-top-right-radius: 3px;
+  border-bottom-left-radius: 3px;
 }
 .thumb a.listing .title {
   position: absolute;
   bottom: 10%;
-  left: 0;
-  right: 0;
+  left: 10px;
+  right: 10px;
   text-align: center;
+  font-weight: bold;
   color: white;
+  opacity: 0;
+}
+.thumb a.listing:hover .title {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
 }
 .thumb a.listing .watchlist-btn {
   position: absolute;
   right: 0;
-  top: 10%;
-  background: white;
+  top: 40px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+.thumb a.listing:hover .watchlist-btn {
+  opacity: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
 }
 .thumb a.listing .watchlist-added {
   background: blue;
@@ -6802,10 +6818,16 @@ body {
 .thumb a.listing .likes-counter {
   position: absolute;
   right: 0;
-  top: 20%;
+  top: 74px;
   text-align: right;
   background: black;
   color: white;
+  padding: 5px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+.thumb a.listing:hover .likes-counter {
+  opacity: 1;
 }
 .container.nine-grid {
   max-width: 700px;
@@ -6843,4 +6865,16 @@ body {
   max-width: 100%;
   max-height: 100%;
   vertical-align: middle;
+}
+#main div.row.checkboxes > div.col-md-4 {
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-bottom: 10px;
+}
+#main div.row.checkboxes label.catagoryButton {
+  text-align: left;
+}
+#main div.row.checkboxes label.catagoryButton.active {
+  background-color: #496ab2;
+  color: #fff;
 }

@@ -4,13 +4,13 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: #496ab2;
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 }
 
 .thumb a.listing:hover .overlay {
-  opacity: 1;
+  opacity: 0.75;
 }
 
 .thumb a.listing .pricetag {
@@ -18,22 +18,40 @@
   top: 0;
   right: 0;
   background: white;
+  padding: 5px;
+  border-top-right-radius: 3px;
+  border-bottom-left-radius: 3px;
 }
 
 .thumb a.listing .title {
   position: absolute;
   bottom: 10%;
-  left: 0;
-  right: 0;
+  left: 10px;
+  right: 10px;
   text-align: center;
+  font-weight: bold;
   color: white;
+  opacity: 0;
+}
+
+.thumb a.listing:hover .title {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .thumb a.listing .watchlist-btn {
   position: absolute;
   right: 0;
-  top: 10%;
-  background: white;
+  top: 40px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.thumb a.listing:hover .watchlist-btn {
+  opacity: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
 }
 
 .thumb a.listing .watchlist-added {
@@ -43,8 +61,15 @@
 .thumb a.listing .likes-counter {
   position: absolute;
   right: 0;
-  top: 20%;
+  top: 74px;
   text-align: right;
   background: black;
   color: white;
+  padding:5px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.thumb a.listing:hover .likes-counter {
+  opacity: 1;
 }

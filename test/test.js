@@ -7,3 +7,5 @@ var https = require('https');
 // Test 2: Make sure our JSON response has been filtered properly (only relevant fields)
 
 // Test 3: Test interval function is ticking properly
+
+// Test 4: Test cache deletion/update

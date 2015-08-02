@@ -1,5 +1,5 @@
 var ROUTES = {
-  index: '/',
+  categories: '/',
   images: '/flow'
 };
 module.exports = ROUTES;

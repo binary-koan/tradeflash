@@ -1,31 +1,99 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var m = require('../../vendor/mithril/mithril');
-var socket = require('../util/socket');
 var ROUTES = require('../util/routes');
+var socket;
+
+var Categories = {
+  
+  list: m.prop([]),
+  
+  controller: function() {
+    socket.emit('get items');
+    
+    return {
+      list: Categories.list
+    };
+  },
+  
+  
+   //<label id="catagoryButton1" class="btn btn-primary catagoryButton">
+        //  <input id = "catagoryCheckbox1" type="checkbox" autocomplete="off"><img src="https://trademe.tmcdn.co.nz/photoserver/full/374118004.jpg" width="100" height="100">
+        //  Hottest
+      //  </label>
+  
+  view: function(ctrl) {
+    return m('div', [
+      m('.row.checkboxes', ctrl.list().map(function(object) {
+        return m('.col-md-4.col-xs-6', m('label.btn.btn-default.catagoryButton.btn-block', {
+          onclick:function(event){
+            $(event.target).toggleClass("active")
+          }
+        }, [
+          m('input.sr-only[type=checkbox]', { id: object.id }), m('label', { for: object.id }, object.name)
+        ]));
+      })),
+      
+      m('button.btn.btn-primary.catagoryButton.btn-block', {
+        onclick:function(event) {
+          console.log('getting categories');
+          getChosenCategories();
+        }
+      }, m('label',"Submit"))
+    ]);
+  }
+};
+
+module.exports = function(s) {
+  socket = s;
+  
+  socket.on('sending categories', function(items) {
+    if (m.route() != ROUTES.categories) return;
+    
+    console.log('sending items');
+   
+    Categories.list(items);
+    m.redraw();
+  });
+  
+  return Categories;
+};
+
+function getChosenCategories(){
+ var chosenCategories = [];
+  $("#main .checkboxes input[type=checkbox]").each(function() {
+    if($(this).is(":checked")) {
+      console.log('is checked');
+      chosenCategories.push($(this).attr("id"));
+    }
+  });
+  
+  console.log('chosen categories: ' + chosenCategories);
+  
+  //send list somewhere
+  m.route(ROUTES.images, { categories: chosenCategories});
+}
+
+
+},{"../../vendor/mithril/mithril":8,"../util/routes":4}],2:[function(require,module,exports){
+var m = require('../../vendor/mithril/mithril');
+var ROUTES = require('../util/routes');
+var socket;
 
 var Images = {
   list: m.prop([]),
   
-  setup: function() {
-    socket.on('update', function(msg) {
-      if (m.route() != ROUTES.images) return;
-      
-      console.log(msg);
-      Images.list().push(msg.url);
-      Images.list().shift();
-      m.redraw();
+  controller: function() {
+    var categories = m.route.param('categories');
+    socket.emit('get category', categories);
+    //for (var i = 0; i < categories.length; i++) {
+      // emit 'get category' or something with category
+    //  socket.emit('get category', categories[i]);
+    //}
+    
+    socket.on('sending listings', function(listings) {
+      this.list = listings.listings;
     });
     
-    socket.on('sending items', function(items) {
-      if (m.route() != ROUTES.images) return;
-      
-      console.log('sending items');
-      Images.list(items);
-      m.redraw();
-    });
-  },
-  
-  controller: function() {
     socket.emit('get items');
     
     return {
@@ -34,38 +102,108 @@ var Images = {
   },
   
   view: function(ctrl) {
-    return m('.row', ctrl.list().map(function(src) {
+    return m('.row', ctrl.list().map(function(item) {
       return m('.col-md-4.col-xs-6', m('.thumb',
-        m('a.thumbnail.listing', { href: '#' }, [
-          m('img.img-responsive', { src: src }),
+        m('a.thumbnail.listing', {
+          href: 'http://www.trademe.co.nz/Browse/Listing.aspx?id=' + item.id,
+          target: "_blank", // open in new tab
+          config: item.config
+        }, [
+          m('img.img-responsive', { src: item.url }),
           m('.overlay'),
+          m('button.btn-warning.watchlist-btn', 'add watchlist', { onclick: addToWatchList }),
+          m('p', '+' + item.likes),
           m('.pricetag', [
             m('span.sr-only', 'Current bid: '),
-            m('span', '$10.00')
+            m('span', item.price)
           ]),
-          m('h5.title', 'Item title')
+          m('h5.title', item.title)
         ])
       ));
     }));
   }
 };
 
-module.exports = Images;
+var itemIndices = [], // for selecting next item swap
+  nextItem = 0; // index of next item to to swap 
 
-},{"../../vendor/mithril/mithril":8,"../util/routes":4,"../util/socket":5}],2:[function(require,module,exports){
-var m = require('../../vendor/mithril/mithril');
-var ROUTES = require('../util/routes');
-
-var StartPage = {
-  controller: function() { return {} },
+module.exports = function(s) {
+  socket = s;
   
-  view: function(ctrl) {
-    return m("a", { href: ROUTES.images, config: m.route }, 'Default images');
-  }
+  socket.on('update', function(item) {
+    if (m.route() != ROUTES.images) return;
+    
+    // item = { imageURL: item };
+    
+    console.log(item);
+    
+    // fade in/out animations
+    $('div a.thumbnail.listing').eq(0)
+      .fadeTo(500, 0.001, "easeOutCubic", function() {
+        Images.list()[nextItem] = item;
+        nextItem = (nextItem + 1) % 10;
+        item.config = fadeIn(item);
+        m.redraw();
+      });
+  });
+  
+  socket.on('sending items', function(items) {
+    if (m.route() != ROUTES.images) return;
+    
+    console.log('sending items');
+    for (var i = 0; i < items.length; i++) {
+      items[i] = { url: items[i] };
+    }
+    
+    // next
+    items.forEach(function (d, i){
+      itemIndices.push(i);
+    });
+    shuffleArray(itemIndices);
+    
+    Images.list(items);
+    m.redraw();
+  });
+  
+  return Images;
 };
 
-module.exports = StartPage;
+// utility methods
 
+function fadeIn(item){
+  return function(elem){
+    $(elem).css('opacity', 0);
+    $(elem).fadeTo(500, 1, "easeOutCubic", fadedIn);
+    function fadedIn(){
+      item.config = undefined;
+    }
+  }
+}
+
+function addToWatchList(item){
+  return function(elem) {
+    $(item).addClass("active watchlist-added") 
+    // increments 'like' counter
+    // TODO: tell server
+    item.likes++;
+    socket.emit('add to watchlist', item.id);
+  }
+}
+
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;
+}
+
+// add custom easing function
+$.easing.easeOutCubic = function (x, t, b, c, d) {
+  return c*((t=t/d-1)*t*t + 1) + b;
+}
 },{"../../vendor/mithril/mithril":8,"../util/routes":4}],3:[function(require,module,exports){
 // Import jQuery and plugins into the global namespace
 var jQuery = require('../vendor/jquery/dist/jquery');
@@ -74,20 +212,20 @@ require('../vendor/bootstrap/dist/js/bootstrap');
 
 // Configure mithril routes
 var m = require('../vendor/mithril/mithril');
+var socket = require('./util/socket');
 var ROUTES = require('./util/routes');
-var StartPage = require('./components/startpage');
-var Images = require('./components/images');
-Images.setup();
+var Categories = require('./components/categories')(socket);
+var Images = require('./components/images')(socket);
 
 var paths = {};
-paths[ROUTES.index] = StartPage;
+paths[ROUTES.categories] = Categories;
 paths[ROUTES.images] = Images;
 
-m.route(document.getElementById('main'), ROUTES.index, paths);
+m.route(document.getElementById('main'), ROUTES.categories, paths);
 
-},{"../vendor/bootstrap/dist/js/bootstrap":6,"../vendor/jquery/dist/jquery":7,"../vendor/mithril/mithril":8,"./components/images":1,"./components/startpage":2,"./util/routes":4}],4:[function(require,module,exports){
+},{"../vendor/bootstrap/dist/js/bootstrap":6,"../vendor/jquery/dist/jquery":7,"../vendor/mithril/mithril":8,"./components/categories":1,"./components/images":2,"./util/routes":4,"./util/socket":5}],4:[function(require,module,exports){
 var ROUTES = {
-  index: '/',
+  categories: '/',
   images: '/flow'
 };
 module.exports = ROUTES;

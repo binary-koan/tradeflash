@@ -1,12 +1,27 @@
 $(function() {
-    $("#button2")
+    $("#catagoryButton2")
         .click(function() {
-           // $(this).text("sfdasfasdfdas");
-          // $(".title").html("sweatshirt");
-         // $(this).addClass("current").siblings().removeClass("active");
          alert("clicked");
+         
         })
         .mouseout(function() {
-            /// $(".title").html("");
+         if(document.getElementById('catagoryCheckbox2').checked){
+         }
+            
+        });
+        
+        //
+         $("#submitButton")
+        .click(function() {
+         alert("clicked");
+         //check each checkbox, add to list of wanted catagories if checked 
+          if(document.getElementById('catagoryCheckbox2').checked){
+              //add to list 
+         }
+        })
+        .mouseout(function() {
+         if(document.getElementById('catagoryCheckbox2').checked){
+         }
+            
         });
 });

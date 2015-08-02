@@ -4,13 +4,23 @@ var trademe = require('./trademe');
 
 var topLevelCategories;
 var subcategories;
-var listings;
+var listings = [];
 
 // Parse API responses
 
 function parseTopLevelCategories(data) {
   // data is the JSON response from the API (as an object)
   // should return an object like [{id: <id>, name: <name>}, {id: <id2>, name: <name2>}, ...]
+  var cat = [];
+  
+  data.Subcategories.forEach(function (category) {
+    cat.push({
+      id: category.Number,
+      name: category.Name
+    });
+  });
+  
+  return cat;
 }
 
 function parseSubcategories(data) {
@@ -19,8 +29,21 @@ function parseSubcategories(data) {
 }
 
 function parseListings(data) {
+  var listings = [];
+  console.log(data);
   // data is the JSON response from API listings for category request
   // should return an object like [{title: <title>, price: <price>, hasBuyNow: <true|false>, image: <url>, ... (any other data we need) }]
+  data.List.forEach(function (listing){
+    listings.push({
+      title: listing.Title,
+      price: listing.PriceDisplay,
+      hasBuyNow: listing.HasBuyNow,
+      imageURL: listing.PictureHref.replace('/\/thumb\//', '/full/'),
+      id: listing.ListingId
+    });
+  });
+  console.log("parsed listing", listings);
+  return listings;
 }
 
 // Initial request for categories
@@ -74,12 +97,14 @@ module.exports = {
   },
 
   getListings: function(id, callback) {
+    console.log('id: ' + id);
+    console.log('listings: ' + listings);
     if (listings[id]) {
       callback(listings[id]);
     }
     else {
-      trademe.apiRequest('<get listing with id>', function(data) {
-        listings[id] = parseListings(data);
+      trademe.apiRequest('/v1/Search/General.json?category='+id, function(data) {
+        listings[id] = parseListings(JSON.parse(data));
         callback(listings[id]);
       });
       // Delete the cache after 15 min

@@ -8,7 +8,7 @@ var buffer = require('vinyl-buffer');
 var gutil = require('gulp-util');
 var assign = require('lodash.assign');
 
-gulp.task('default', $.sequence('js', 'less', 'server'));
+gulp.task('default', ['js', 'less', 'server']);
 
 // Assets
 

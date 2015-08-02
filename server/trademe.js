@@ -22,11 +22,11 @@ function apiRequest(url, cb) {
     
     // End event for the call
 	  response.on('end', function () {
-	    // ...
-	    
+	    // Callback acting on the response
 	    cb(str);
 	    
-	     // var listing = JSON.parse(str);
+	    // PARSING: TO GO IN DATA.JS
+	    // var listing = JSON.parse(str);
 
       //   var currentPrice = listing.MinimumNextBidAmount;
       //   var photoURL = listing.Photos[0]

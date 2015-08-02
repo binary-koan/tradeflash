@@ -5,13 +5,13 @@ require('../vendor/bootstrap/dist/js/bootstrap');
 
 // Configure mithril routes
 var m = require('../vendor/mithril/mithril');
+var socket = require('./util/socket');
 var ROUTES = require('./util/routes');
-var StartPage = require('./components/startpage');
-var Images = require('./components/images');
-Images.setup();
+var Categories = require('./components/categories')(socket);
+var Images = require('./components/images')(socket);
 
 var paths = {};
-paths[ROUTES.index] = StartPage;
+paths[ROUTES.categories] = Categories;
 paths[ROUTES.images] = Images;
 
-m.route(document.getElementById('main'), ROUTES.index, paths);
+m.route(document.getElementById('main'), ROUTES.categories, paths);

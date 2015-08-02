@@ -1,11 +1,19 @@
 var data = require('./data');
+var trademe = require('./trademe');
 
-var categoryTickers = {};
+var categoryTickers = {},
+  itemLikes = {};
 
 function setupSocket(socket) {
+  data.getCategories(function(categories){
+    console.log('sending list of categories');
+    socket.emit('sending categories', categories);
+    //console.log(categories);
+  });
   // Return the first 9 items in a category upon request
   socket.on('get category', function(id) {
     data.getListings(id, function(listings) {
+      console.log('RECEIVED: ' + id);
       socket.emit('sending listings', { category: id, listings: listings.slice(0, 9) });
     });
   });
@@ -24,6 +32,13 @@ function setupSocket(socket) {
         categoryTickers[id].listeners.splice(categoryListeners[id], 1);
       }
     }
+  });
+  
+  socket.on('add to watchlist', function(itemId){
+    // increment likes count by one
+    if (itemLikes[itemId])  itemLikes[i]++;
+    else itemLikes[itemId] = 1;
+    trademe.apiRequest('');
   });
 }
 
@@ -53,10 +68,6 @@ module.exports = function(http) {
   io.on('connection', function(socket) {
     console.log('Client connected!');
     setupSocket(socket);
-    
-    socket.on('get items', function() {
-      socket.emit('sending items', items.slice(0, 9));
-    });
   });
 
   // function categoryUpdater(categories) {
@@ -67,44 +78,44 @@ module.exports = function(http) {
   //   };
   // }
   
-  var items = [];
+  // var items = [];
   
-  var trademe = require('./trademe');
-  trademe.apiRequest('/v1/Search/General.json?category=3720', function(data) {
-    data = JSON.parse(data);
+  // var trademe = require('./trademe');
+  // trademe.apiRequest('/v1/Search/General.json?category='+category, function(data) {
+  //   data = JSON.parse(data);
     
-    for (var i = 0; i < data['List'].length; i++) {
-      // Cheat and get the full image instead of the thumbnail
-      items.push(data['List'][i]['PictureHref'].replace(/\/thumb\//, '/full/'));
-    }
+  //   for (var i = 0; i < data['List'].length; i++) {
+  //     // Cheat and get the full image instead of the thumbnail
+  //     items.push(data['List'][i]['PictureHref'].replace(/\/thumb\//, '/full/'));
+  //   }
     
-    console.log('got items!');
-    console.log(items.length);
-  });
+  //   console.log('got items!');
+  //   console.log(items.length);
+  // });
 
   // categories.load(function(categories) {
   //   setInterval(categoryUpdater(categories), 10000);
   // });
   
-  var i = 9;
-  setInterval(function() {
-    i++;
-    if (i >= items.length) {
-      i = 9;
-    }
-    io.emit('update', { url: items[i] });
-  }, 10000);
+  // var i = 9;
+  // setInterval(function() {
+  //   i++;
+  //   if (i >= items.length) {
+  //     i = 9;
+  //   }
+  //   io.emit('update', { url: items[i] });
+  // }, 2000);
   
   // gets all categories, puts it in a file
   // Do we need to put it in a file? see data.js:31 - Jono
-  (function loadCategories(){
-    trademe.apiRequest('/v1/Categories.json', function (categories){
-      fs.writeFile("server/res/categories.json", categories, function(err) {
-        if(err){
-          return console.log("failed to write categories to file", err);
-        }
-        console.log("wrote categories to server/res/categories.json");
-      });
-    });
-  })();
+  // (function loadCategories(){
+  //   trademe.apiRequest('/v1/Categories.json', function (categories){
+  //     fs.writeFile("server/res/categories.json", categories, function(err) {
+  //       if(err){
+  //         return console.log("failed to write categories to file", err);
+  //       }
+  //       console.log("wrote categories to server/res/categories.json");
+  //     });
+  //   });
+  // })();
 };
